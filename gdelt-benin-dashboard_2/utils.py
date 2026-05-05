@@ -1,9 +1,13 @@
+# utils.py
+from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+_HERE = Path(__file__).parent   # dossier contenant utils.py
+
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/gdelt_benin_clean.csv")
+    df = pd.read_csv(_HERE / "data" / "gdelt_benin_clean.csv")
     return df
 
 @st.cache_data
