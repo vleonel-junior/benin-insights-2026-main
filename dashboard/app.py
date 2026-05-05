@@ -1,3 +1,5 @@
+import os
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -35,7 +37,9 @@ DEPT_ORDER = [
 # ─── DATA ─────────────────────────────────────────────────────────────────────
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/gdelt_replubique_benin_clean_.csv")
+    import os
+    DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "gdelt_replubique_benin_clean_.csv")
+    df = pd.read_csv(DATA_PATH)
     df["month_dt"] = pd.to_datetime(df["month"])
     df["month_label"] = df["month_dt"].dt.strftime("%b %Y")
     return df
