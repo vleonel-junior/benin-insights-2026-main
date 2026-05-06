@@ -1,5 +1,3 @@
-import os
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -189,27 +187,74 @@ st.subheader("🗺️ Géographie des événements")
 col_m1, col_m2 = st.columns([3, 2])
 
 with col_m1:
-    df_map = df.dropna(subset=["ActionGeo_Lat", "ActionGeo_Long"])
+    DEPT_COORDS = {
+        "Alibori":    {"lat": 11.30, "lon": 2.85},
+        "Atacora":    {"lat": 10.63, "lon": 1.65},
+        "Atlantique": {"lat": 6.65,  "lon": 2.25},
+        "Borgou":     {"lat": 9.50,  "lon": 2.78},
+        "Collines":   {"lat": 8.35,  "lon": 2.30},
+        "Couffo":     {"lat": 7.03,  "lon": 1.75},
+        "Donga":      {"lat": 9.72,  "lon": 1.68},
+        "Littoral":   {"lat": 6.37,  "lon": 2.42},
+        "Mono":       {"lat": 6.80,  "lon": 1.62},
+        "Oueme":      {"lat": 6.75,  "lon": 2.60},
+        "Plateau":    {"lat": 7.35,  "lon": 2.58},
+        "Zou":        {"lat": 7.50,  "lon": 2.18},
+    }
+
+    import numpy as np
+    def norm(s): return (s - s.min()) / (s.max() - s.min() + 1e-9)
+
+    df_map = df.groupby("DepartementBenin").agg(
+        nb_conflits=("IsConflict", "sum"),
+        pct_conflit=("IsConflict", "mean"),
+        goldstein=("GoldsteinScale", "mean"),
+        emotion_intensity=("GKG_EmotionIntensity", "mean"),
+        total=("IsConflict", "count"),
+    ).reset_index()
+
+    df_map["risk_score"] = (
+        0.4 * norm(df_map["pct_conflit"]) +
+        0.4 * norm(-df_map["goldstein"]) +
+        0.2 * norm(df_map["emotion_intensity"])
+    ) * 100
+
+    df_map["lat"] = df_map["DepartementBenin"].map(lambda d: DEPT_COORDS.get(d, {}).get("lat"))
+    df_map["lon"] = df_map["DepartementBenin"].map(lambda d: DEPT_COORDS.get(d, {}).get("lon"))
+    df_map["pct_conflit_label"] = (df_map["pct_conflit"] * 100).round(1)
+    df_map["risk_score_r"] = df_map["risk_score"].round(1)
+    df_map = df_map.dropna(subset=["lat", "lon"])
+
     fig_map = px.scatter_mapbox(
         df_map,
-        lat="ActionGeo_Lat",
-        lon="ActionGeo_Long",
-        color="QuadLabel",
-        size="NumArticles",
-        hover_name="ActionGeo_FullName",
-        hover_data={"Actor1Name": True, "EventLabel": True, "GoldsteinScale": ":.2f"},
-        color_discrete_map=COLORS,
-        zoom=5.5,
-        center={"lat": 9.5, "lon": 2.3},
-        mapbox_style="open-street-map",
-        opacity=0.65,
-        size_max=18,
-        title="Carte des événements (taille = nb articles)",
+        lat="lat", lon="lon",
+        size="nb_conflits",
+        color="risk_score",
+        hover_name="DepartementBenin",
+        hover_data={
+            "pct_conflit_label": True,
+            "risk_score_r": True,
+            "total": True,
+            "lat": False, "lon": False,
+            "risk_score": False,
+        },
+        labels={
+            "pct_conflit_label": "% conflit",
+            "risk_score_r": "Score de risque",
+            "total": "Total événements",
+        },
+        color_continuous_scale=["#639922", "#EF9F27", "#E24B4A"],
+        size_max=45,
+        zoom=6,
+        center={"lat": 9.3, "lon": 2.3},
+        mapbox_style="carto-positron",
+        title="Carte des départements — Score de risque (taille = nb conflits)",
     )
     fig_map.update_layout(
-        margin=dict(t=40, b=0, l=0, r=0),
+        height=480,
+        margin=dict(t=40, b=10, l=10, r=10),
         paper_bgcolor="rgba(0,0,0,0)",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        coloraxis_colorbar=dict(title="Risque"),
     )
     st.plotly_chart(fig_map, use_container_width=True)
 
