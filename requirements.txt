@@ -9,3 +9,4 @@ pyarrow>=13.0
 tqdm>=4.66
 nbformat>=5.9
 ipykernel>=6.25
+ruptures>=1.1.9
