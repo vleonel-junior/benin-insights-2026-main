@@ -133,7 +133,7 @@ custom_css = """
 st.markdown(custom_css, unsafe_allow_html=True)
 
 # Data Directory
-DATA_DIR = "/home/alexis/Ressources/insight"
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 # Caching Data Loader
 @st.cache_data
