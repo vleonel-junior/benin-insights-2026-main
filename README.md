@@ -1,66 +1,82 @@
-# 🇧🇯 Bénin Insights 2026 — Observatoire Médiatique GDELT
+# 🇧🇯 Bénin Pulse — Plateforme de Décision Media Intelligence
 
-> Analyse des événements médiatiques au Bénin sur l'année 2025 à partir des données GDELT, avec modélisation ML, détection de ruptures et prédiction prospective du risque socio-politique.
+> **Ce que le monde dit du Bénin correspond-il à ce qui s'y passe vraiment — et qu'est-ce que ça change pour moi ?**
+>
+> Bénin Pulse croise le regard international (GDELT + FMI) et la réalité locale (médias béninois) pour transformer la perception médiatique en outil de décision concret.
 
 ---
 
 ## Table des matières
 
-1. [Contexte & Objectif](#1-contexte--objectif)
+1. [Vision & Positionnement](#1-vision--positionnement)
 2. [Architecture du projet](#2-architecture-du-projet)
 3. [Sources de données](#3-sources-de-données)
 4. [Pipeline analytique](#4-pipeline-analytique)
 5. [Modèles & Méthodes](#5-modèles--méthodes)
-6. [Dashboard interactif](#6-dashboard-interactif)
+6. [Dashboard décisionnel](#6-dashboard-décisionnel)
 7. [Installation & Lancement](#7-installation--lancement)
 8. [Résultats clés](#8-résultats-clés)
 9. [Stack technique](#9-stack-technique)
-10. [Équipe](#équipe)
+10. [Équipe](#10-équipe)
 
 ---
 
-## 1. Contexte & Objectif
+## 1. Vision & Positionnement
 
-Ce projet a été développé dans le cadre du **Hackathon Bénin Insights**. Il vise à analyser la couverture médiatique internationale du Bénin en 2025 à travers la base de données [GDELT](https://www.gdeltproject.org/), qui indexe en temps réel les événements extraits de la presse mondiale.
+### La question centrale
 
-**Question centrale :** Le Bénin, souvent présenté comme un « îlot de stabilité » en Afrique de l'Ouest, confirme-t-il ce statut dans sa couverture médiatique, et quels signaux précoces permettent d'anticiper des épisodes d'instabilité ?
+Les médias internationaux construisent une image du Bénin fondée sur des signaux de crise, des agrégats régionaux et une couverture majoritairement négative. Les médias locaux béninois documentent quant à eux un pays en transformation économique active, avec des réformes concrètes sur l'investissement, la diaspora et l'industrie. **Ces deux lectures coexistent sans jamais être confrontées.**
 
-**Trois angles d'analyse :**
+Bénin Pulse est la première plateforme à combiner ces deux sources pour répondre à une question simple : **est-ce que ce que le monde dit du Bénin change ce que tu dois faire ?**
 
-- **Descriptif** — Cartographier les événements sur l'année 2025 (volume, tonalité, type, géographie)
-- **Comparatif** — Positionner le Bénin par rapport à ses voisins (Nigeria, Niger, Burkina Faso, Mali, Togo, Ghana, Sénégal)
-- **Prédictif** — Construire un indice de risque composite (IRC) et projeter son évolution à 4 et 12 semaines via Prophet
+### Trois profils cibles, trois lectures différentes
+
+| Profil | Question décisionnelle |
+|---|---|
+| **Investisseur étranger** | Le Bénin est-il stable et dans quel secteur s'engager par rapport à ses voisins ? |
+| **Diaspora & Opérateur économique** | Comment créer, investir ou s'installer concrètement au Bénin aujourd'hui ? |
+| **Afro-descendant** | Quelle est la réalité du Bénin débarrassée du prisme réducteur international ? |
+| **Journaliste / Acteur Médias** | Sur quels angles d'enquête les médias béninois doivent-ils se focaliser pour déconstruire les stéréotypes ? |
+| **Décideur Public / Gouvernement** | Les réformes sont-elles bien perçues et y a-t-il un fossé de communication à combler ? |
+
+### Ce qui différencie Bénin Pulse
+
+La combinaison de deux sources que personne ne croise aujourd'hui au même endroit :
+
+- **GDELT + FMI** — le signal médiatique international et les données macroéconomiques comparatives
+- **Médias locaux béninois** — 32 000+ articles extraits via WordPress API, RSS et scraping direct, enrichis par classification NLP zero-shot (XLM-RoBERTa)
+
+Ce croisement produit de la **media intelligence appliquée à un pays**, transformée en outil d'orientation — pas en agrégateur d'information.
 
 ---
 
 ## 2. Architecture du projet
 
 ```
-benin-insights-2026/
+benin-pulse/
 │
 ├── notebooks/
-│   ├── 01_Data_extraction_GDELT.ipynb   # Extraction BigQuery → Google Drive
-│   ├── 02_EDA.ipynb                     # Analyse exploratoire multi-niveaux
-│   ├── 03_ML_models.ipynb               # Clustering, classification, ruptures
-│   └── 04_Prediction_Prospective_Benin.ipynb  # IRC, Prophet, Early Warning
+│   ├── 01_Data_extraction_GDELT.ipynb        # BigQuery → 7 tables GDELT + FMI
+│   └── 02_Data_extraction_Medias_Locaux.ipynb # Scraping médias locaux + NLP zero-shot
 │
 ├── data/
 │   ├── raw/
-│   │   └── eventsBenin.parquet          # Données brutes (Parquet)
+│   │   ├── benin_events_clean.csv            # Événements GDELT (25 629 lignes)
+│   │   ├── comparatif_regional.csv           # Bénin vs 6 pays voisins
+│   │   ├── benin_eco_events.csv              # Coopérations économiques
+│   │   ├── benin_bilateral.csv               # Relations bilatérales
+│   │   ├── benin_media_bias.csv              # Biais médiatique local vs international
+│   │   ├── benin_sector_themes.csv           # Radar sectoriel (GKG)
+│   │   └── fmi_comparatif.csv                # Macro-économie FMI 2018–2026
 │   └── processed/
-│       └── gdelt_republique_benin_clean.csv   # Dataset principal nettoyé
-│
-├── models/
-│   ├── models_bundle.pkl        # Scaler, PCA, K-Means, DBSCAN, PELT, RF, XGBoost
-│   └── models_prospectifs.pkl   # Prophet + IRC (modèles prospectifs)
+│       ├── benin_pulse_donnees_propres.csv   # Articles locaux classifiés (NLP)
+│       └── benin_raw_media.csv               # Articles bruts collectés (32 222 lignes)
 │
 ├── dashboard/
-│   ├── app.py                   # Application Streamlit
+│   ├── app.py                                # Application Streamlit multi-profils
 │   ├── requirements.txt
-│   └── data/
-│       └── gdelt_replubique_benin_clean_.csv  # Copie locale pour le dashboard
+│   └── data/                                 # Copies locales des CSV
 │
-├── requirements.txt
 └── README.md
 ```
 
@@ -68,186 +84,182 @@ benin-insights-2026/
 
 ## 3. Sources de données
 
-Le projet mobilise **deux sources GDELT distinctes**, avec des périmètres et des usages différents.
+Le projet mobilise **trois sources distinctes**, combinées pour la première fois dans un même outil décisionnel.
 
-### 3.1 Source BigQuery — Extraction via Google Colab (`01_Data_extraction_GDELT.ipynb`)
+### 3.1 GDELT — Signal médiatique international (BigQuery)
 
-Accès à l'API publique `gdelt-bq.gdeltv2` sur Google BigQuery, couvrant la **période du 1er janvier au 31 décembre 2025**. Trois tables sont extraites et sauvegardées sur Google Drive :
-👉 [Accéder au Drive](https://drive.google.com/drive/folders/1GxSqPlL_Wxs1RJRO4R2zAEsficxM8MXU?usp=sharing)
+Extraction via `gdelt-bq.gdeltv2` sur Google BigQuery, fenêtre glissante **12 mois (mai 2025 → mai 2026)**.
 
-| Fichier CSV | Table BigQuery source | Contenu |
+| Table produite | Contenu | Lignes |
 |---|---|---|
-| `benin_events_clean.csv` | `gdeltv2.events_partitioned` | Événements bruts enrichis : acteurs, codes CAMEO, GoldsteinScale, AvgTone, géolocalisation |
-| `benin_gkg.csv` | `gdeltv2.gkg_partitioned` | Métadonnées sémantiques par article : V2Themes, V2Locations, V2Persons, V2Organizations, V2Tone |
-| `comparatif_regional_1.csv` | `gdeltv2.events_partitioned` | Agrégats mensuels pour 8 pays (Bénin + 7 voisins) : nb événements, Goldstein moyen, % conflits, % coopération |
+| `benin_events_clean.csv` | Événements enrichis : acteurs, codes CAMEO, GoldsteinScale, AvgTone, géolocalisation, source_type | 25 629 |
+| `comparatif_regional.csv` | Agrégats mensuels pour 7 pays : Bénin, Togo, Ghana, Nigeria, Niger, Burkina Faso, Cameroun | 91 |
+| `benin_eco_events.csv` | Événements de coopération économique (EventRootCode 04–06, GoldsteinScale > 0) | 10 079 |
+| `benin_bilateral.csv` | Relations bilatérales Bénin–9 partenaires, mois par mois | 104 |
+| `benin_media_bias.csv` | Ton moyen et conflictualité par type de source (local / régional / international) sur périodes de crise annotées | 151 |
+| `benin_sector_themes.csv` | Radar sectoriel par mois (parsing V2Themes du GKG) | 117 |
 
-**Filtres appliqués :**
-- Exclusion explicite de « Benin City » (Nigeria) — fréquente source de pollution dans les requêtes Bénin
-- Filtre combiné : `Actor1CountryCode = 'BEN'` **OU** `Actor2CountryCode = 'BEN'` **OU** `ActionGeo_CountryCode = 'BN'`
-- Table GKG : filtre `V2Locations LIKE '%#BN#%'`
-- Table GKG : suppression de la colonne `GCAM` (trop volumineuse → plusieurs TB/an) au profit de `V2Tone`
+**Rigueur géographique — 4 niveaux de protection contre la contamination Nigeria :**
+1. `ActionGeo_CountryCode != 'NI'`
+2. Bounding box GPS : lat [6.10, 12.42] / lon [0.77, 3.85]
+3. Liste noire de toponymes nigérians (`Benin City`, `Edo State`, `Warri`, etc.)
+4. Contrôle Python post-extraction → 0 anomalie détectée sur les 25 629 événements
 
-**Ces deux fichiers CSV (`benin_events_clean.csv` et `benin_gkg.csv`) sont utilisés dans le notebook `02_EDA.ipynb` mais ne sont pas versionnés dans ce dépôt.** Ils doivent être récupérés depuis le Drive ou regénérés via le notebook 01.
+### 3.2 FMI — Données macroéconomiques comparatives
 
----
+Extraction via l'API publique `imf.org/external/datamapper`, 6 indicateurs sur 2018–2026 pour 7 pays :
 
-### 3.2 Source GDELT Project direct — Données intérieures (`data/processed/`)
+| Indicateur | Code FMI |
+|---|---|
+| Croissance réelle du PIB (%) | `NGDP_RPCH` |
+| Inflation (%) | `PCPIPCH` |
+| Dette publique / PIB (%) | `GGXWDG_NGDP` |
+| Balance courante / PIB (%) | `BCA_NGDPD` |
+| PIB par habitant (USD) | `NGDPDPC` |
+| Taux de chômage (%) | `LUR` |
 
-Un second dataset a été extrait directement depuis [gdeltproject.org](https://www.gdeltproject.org/), avec un focus plus granulaire sur les **territoires intérieurs du Bénin** (niveau département/commune). C'est ce dataset qui constitue la base principale des analyses ML, de la prédiction et du dashboard.
+### 3.3 Médias locaux béninois — Signal de terrain
 
-| Fichier | Emplacement | Usage |
+Collecte de **32 222 articles** (jan. 2025 → mai 2026) depuis 3 types de sources :
+
+| Type | Sources | Articles |
 |---|---|---|
-| `gdelt_republique_benin_clean.csv` | `data/processed/` | Notebook 02 (EDA partielle), 03 (ML), 04 (Prédiction), Dashboard |
-| `gdelt_replubique_benin_clean_.csv` | `dashboard/data/` | Copie utilisée par le dashboard Streamlit |
+| **WordPress API** | La Nouvelle Tribune, Le Matinal, Matin Libre, Ecobenin | ~32 000 |
+| **RSS** | RFI Bénin, 24h au Bénin, Banouto, La Nation, gouv.bj, BCEAO | ~35 |
+| **HTML direct** | gouv.bj/actualites/, investinbenin.com | variable |
 
-> **Note orthographique :** Le nom de fichier contient une légère coquille (`replubique` au lieu de `republique`) — cohérence à maintenir avec le code existant.
+**Classification NLP zero-shot** sur un échantillon représentatif de 2 000 articles via `joeddav/xlm-roberta-large-xnli` (GPU T4), avec une taxonomie de 20 thèmes métier :
+
+```
+diaspora_retour · création_entreprise · industrie_GDIZ · fiscalité_réglementation
+opportunités_investissement · croissance_économique · sécurité_stabilité · tourisme
+agriculture_agrobusiness · numérique_innovation · infrastructure_énergie · foncier_immobilier
+gouvernance_institutionnelle · relations_internationales · vodun_culture_religieuse
+vie_quotidienne · droits_libertés · santé_éducation · culture_identité · environnement_climat
+```
 
 ---
 
 ## 4. Pipeline analytique
 
-### Notebook 01 — Extraction (`01_Data_extraction_GDELT.ipynb`)
+### Notebook 01 — Extraction GDELT + FMI
 
 Exécuté sur **Google Colab** avec authentification Google Cloud.
 
 ```
 Google BigQuery (gdelt-bq.gdeltv2)
     ├─ events_partitioned  ──▶  benin_events_clean.csv
-    ├─ gkg_partitioned     ──▶  benin_gkg.csv
-    └─ events (agrégé)     ──▶  comparatif_regional_1.csv
-                                        │
-                               Google Drive + local /content/
+    ├─ gkg_partitioned     ──▶  benin_sector_themes.csv
+    ├─ events (agrégé)     ──▶  comparatif_regional.csv
+    ├─ events (filtré)     ──▶  benin_eco_events.csv
+    ├─ events (bilatéral)  ──▶  benin_bilateral.csv
+    └─ events (biais)      ──▶  benin_media_bias.csv
+
+API FMI (imf.org/datamapper)
+    └─ 6 indicateurs × 7 pays  ──▶  fmi_comparatif.csv
 ```
 
-Pré-traitement appliqué à la sortie :
-- Suppression des doublons (756 lignes, soit 2,40 %)
-- Suppression des lignes sans géolocalisation `ActionGeo_FullName` (37 lignes, 0,12 %)
-- **Résultat final : 30 711 événements propres**
+**Périodes de crise annotées automatiquement** pour l'analyse du biais médiatique :
 
----
-
-### Notebook 02 — EDA (`02_EDA.ipynb`)
-
-Analyse exploratoire structurée en **4 niveaux progressifs**, mobilisant les deux sources de données :
-
-| Niveau | Contenu |
+| Label | Période |
 |---|---|
-| **Niveau 1** | Dimensions, types, valeurs manquantes, doublons, plage temporelle |
-| **Niveau 2** | Distributions des variables clés (GoldsteinScale, AvgTone, QuadClass, volume mensuel) |
-| **Niveau 3** | Évolution temporelle : courbes mensuelles, volatilité du ton, détection des anomalies (creux juin, pic décembre) |
-| **Niveau 4** | Comparaison régionale — Bénin vs 7 pays voisins sur les indicateurs de conflictualité |
+| `Attaque_Alibori_Avr2025` | 15–30 avr. 2025 |
+| `CoupEtat_Dec2025` | 5–15 déc. 2025 |
+| `Attaque_Kofouno_Mar2026` | 3–10 mars 2026 |
+| `Election_Presidentielle` | 15–30 avr. 2026 |
 
-**Insights structurants issus de l'EDA :**
-- Distribution bimodale du GoldsteinScale → polarisation réelle de la couverture
-- 25,5 % des événements sont conflictuels (QuadClass 3 ou 4) — 1 événement sur 4
-- Ton médiatique moyen légèrement négatif (-1,39) mais sans dramatisation
-- Deux anomalies temporelles majeures : creux en juin, pic en décembre 2025
+### Notebook 02 — Extraction médias locaux + NLP
 
----
-
-### Notebook 03 — Modélisation ML (`03_ML_models.ipynb`)
-
-**Dataset :** `gdelt_republique_benin_clean.csv`
-
-**Features utilisées :**
 ```
-GoldsteinNorm | ToneNorm | NumMentions | NumArticles | MediaWeight | IsNorthBenin
+Sources WordPress / RSS / HTML
+    └─ Collecte (requests + feedparser + BeautifulSoup)
+            └─ benin_raw_media.csv (32 222 articles)
+                    └─ Classification zero-shot (XLM-RoBERTa, T4 GPU)
+                            └─ benin_pulse_donnees_propres.csv (2 000 articles classifiés)
 ```
-
-Trois familles de modèles entraînés :
-
-| Modèle | Type | Objectif |
-|---|---|---|
-| **PCA** | Réduction de dimension | Visualisation 2D des événements |
-| **K-Means** (k optimal via silhouette) | Clustering non-supervisé | Segmentation des profils d'événements |
-| **DBSCAN** | Clustering par densité | Détection d'outliers et clusters non-convexes |
-| **PELT** (`ruptures`) | Détection de ruptures | Points de bascule dans les séries temporelles |
-| **Random Forest** | Classification supervisée | Prédiction `IsConflict` (binaire) |
-| **XGBoost** | Classification supervisée | Prédiction `IsConflict` avec importances de variables |
-
-L'ensemble des modèles et artefacts est sérialisé dans `models/models_bundle.pkl`.
-
----
-
-### Notebook 04 — Prédiction prospective (`04_Prediction_Prospective_Benin.ipynb`)
-
-**Dataset :** `gdelt_models_data.csv` (enrichi par le notebook 03 avec `proba_conflict`)
-
-#### Indice de Risque Composite (IRC)
-
-Score hebdomadaire sur une échelle 0–100 construit à partir de 5 composantes :
-
-| Composante | Poids | Description |
-|---|---|---|
-| C1 — Conflictualité brute | 30 % | Taux d'événements conflictuels (`IsConflict`) |
-| C2 — Probabilité ML | 30 % | Score XGBoost moyen sur la semaine |
-| C3 — Goldstein inversé | 20 % | Score Goldstein négativisé (instabilité) |
-| C4 — Ton négatif | 10 % | AvgTone inversé |
-| C5 — Volume médiatique | 10 % | Nombre d'articles |
-
-**Niveaux de risque :** FAIBLE (0–30) · MODÉRÉ (30–50) · ÉLEVÉ (50–70) · CRITIQUE (70–100)
-
-#### Prévision avec Prophet
-
-- Modèle Meta Prophet entraîné sur les séries hebdomadaires de l'IRC
-- Horizon de prédiction : **4 semaines** et **12 semaines**
-- Intervalle de confiance à 80 %
-- Intégration d'événements politiques béninois (élections) comme régresseurs externes
-- Résultats sauvegardés dans `models/models_prospectifs.pkl`
-
-#### Explicabilité (SHAP)
-
-Analyse des contributions de chaque variable à la prédiction de risque individuelle.
 
 ---
 
 ## 5. Modèles & Méthodes
 
-### Résumé des fichiers modèles
+### Analyse du biais médiatique
 
-| Fichier | Contenu |
-|---|---|
-| `models/models_bundle.pkl` | `scaler`, `kmeans`, `pca`, `dbscan`, `perl` (PELT), `rf`, `xgboost`, `feat`, `best_k`, `sil_scores`, `report`, `profile` |
-| `models/models_prospectifs.pkl` | Modèle Prophet + artefacts IRC |
+Comparaison systématique du **ton moyen (AvgTone)** et du **GoldsteinScale** entre sources locales et internationales sur les périodes de crise annotées.
 
-### Charger les modèles en Python
+**Résultat observé sur le Coup d'État de décembre 2025 :**
 
-```python
-import pickle
+| Source | Ton moyen | GoldsteinScale moyen |
+|---|---|---|
+| Local | +6.87 | +2.63 |
+| Régional | -3.48 | -1.60 |
+| International | -2.47 | +0.23 |
 
-with open('models/models_bundle.pkl', 'rb') as f:
-    bundle = pickle.load(f)
+→ Écart de **+9.3 points de ton** entre médias locaux et internationaux sur le même événement.
 
-model_rf      = bundle['rf']
-model_xgboost = bundle['xgboost']
-scaler        = bundle['scaler']
-features      = bundle['feat']
-kmeans        = bundle['kmeans']
-```
+### Classification NLP zero-shot
+
+- **Modèle** : `joeddav/xlm-roberta-large-xnli` (robuste sur le français et les langues locales)
+- **Approche** : multi-label, seuil de confiance à 0.50
+- **Throughput** : batch_size=64, truncation à 128 tokens, GPU T4
+- **Résultat** : 2 000 articles classifiés, thème dominant `gouvernance_institutionnelle` (18.3%), suivi de `relations_internationales` (14.4%) et `numérique_innovation` (6.5%)
+
+### Analyse comparative GDELT / Médias locaux
+
+| Indicateur | Presse internationale (GDELT) | Presse locale (Bénin) |
+|---|---|---|
+| Taux de conflictualité | 25.9% | 4.7% |
+| Ton moyen | -1.50 | +4.05 |
+| Couverture diaspora/investissement | < 1% | ~10% |
 
 ---
 
-## 6. Dashboard interactif
+## 6. Dashboard décisionnel
 
-Application **Streamlit** localisée dans `dashboard/app.py`.
+Application **Streamlit** accessible en ligne et personnalisée par profil utilisateur.
 
-**Filtres sidebar :**
-- Période (slider sur les mois disponibles)
-- Département(s)
-- Type d'événement (QuadLabel)
-- Type de source médiatique
+**🌐 Démo publique :** [https://benin-observatoire.streamlit.app/](https://benin-observatoire.streamlit.app/)
 
-**Sections du dashboard :**
+### Navigation par profil
 
-| Section | Contenu |
+Le dashboard adapte entièrement son contenu, ses questions décisionnelles et ses visualisations selon le profil sélectionné :
+
+#### 👔 Investisseur étranger
+| Onglet | Contenu |
 |---|---|
-| **KPIs** | Total événements · Taux de conflit · Goldstein moyen · Ton médiatique · Émotion dominante GCAM |
-| **📅 Évolution temporelle** | Volume mensuel par type d'événement (stacked bar) + indicateurs de tendance |
-| **🗺️ Géographie** | Carte des événements par département béninois |
-| **🎯 Thèmes & Émotions** | Analyse V2Themes et émotions GCAM (Trust, Joy, Anger, Fear, Sadness, Surprise) |
-| **🏛️ Acteurs & Sources** | Classement des acteurs, pays, types de sources médiatiques |
-| **🔍 Données brutes** | Tableau filtrable des événements |
-| **🤖 Analyse prédictive** | 4 onglets : Détection de ruptures · Prédiction de conflit · Clustering départements · (IRC prospectif) |
+| Diagnostic Macroéconomique (FMI) | Comparatif PIB/inflation/dette 2018–2026 pour 7 pays ; classement régional 2026 |
+| Risque Régional & Stabilité (GDELT) | Taux coopération vs conflit par pays ; diagnostic de sécurité médiatique |
+| Secteurs Porteurs & Opportunités | Volume de mentions par secteur ; actualités d'investissement récentes |
+| Partenaires & Confiance | Agences officielles partenaires (APIEx, CCIB) ; protocole d'audit indépendant |
+
+#### 💼 Diaspora & Opérateur économique
+| Onglet | Contenu |
+|---|---|
+| Entreprendre & S'installer | Articles classifiés sur la diaspora et la création d'entreprise, liens sources vérifiés |
+| Fiscalité, Infrastructures & GDIZ | Réformes fiscales, zone industrielle Glo-Djigbé |
+| Logistique & Douanes | Relations bilatérales par partenaire (qualité, volume, alertes) |
+| Pulse Citoyen | Métriques d'expérience terrain (délai création entreprise, port, consulats) |
+
+#### 🌍 Afro-descendant
+| Onglet | Contenu |
+|---|---|
+| Vérité vs Récits Globaux | Confrontation chiffrée presse locale vs internationale sur conflictualité et ton |
+| Culture, Tourisme & Vie Quotidienne | Articles culturels, sentiment sectoriel tourisme |
+| Climat Sécuritaire Réel | Localisation précise des incidents ; note sécurité par région (population) |
+| Vérification Terrain | Indice de sécurité ressentie par ville ; flux réseaux sociaux filtrés |
+
+#### ✏️ Journaliste / Acteur Médias
+| Onglet | Contenu |
+|---|---|
+| Diagnostic des Biais | Évolution hebdomadaire du ton par type de source (local / régional / international) |
+| Angles Morts & Opportunités d'Articles | Comparaison couverture locale vs internationale par secteur ; sujets sous-couverts |
+| Charte du Détail | Recommandations éditoriales pratiques pour contrer le cadrage réducteur |
+
+#### 🏛️ Décideur Public / Gouvernement
+| Onglet | Contenu |
+|---|---|
+| Suivi de l'Impact des Réformes | Satisfaction citoyenne vs ton médiatique par réforme |
+| Détection d'Angles Morts Stratégiques | Écarts de perception critiques nuisant à la réputation internationale |
+| Baromètre de Perception Citoyenne | Confiance dans l'action gouvernementale ; top préoccupations citoyennes |
 
 ---
 
@@ -256,100 +268,89 @@ Application **Streamlit** localisée dans `dashboard/app.py`.
 ### Prérequis
 
 - Python 3.9+
-- Compte Google Cloud avec accès BigQuery (pour notebook 01 uniquement)
-- Google Colab recommandé pour les notebooks 01 et 02 (accès Drive)
+- Compte Google Cloud avec accès BigQuery (notebook 01 uniquement)
+- GPU recommandé pour la classification NLP (notebook 02) — testé sur T4 via Google Colab
 
-### Installation des dépendances
+### Installation
 
 ```bash
-git clone https://github.com/<votre-org>/benin-insights-2026.git
-cd benin-insights-2026
+git clone https://github.com/<votre-org>/benin-pulse.git
+cd benin-pulse
 pip install -r requirements.txt
 ```
 
-**Dépendances supplémentaires pour le notebook 04 :**
+**Dépendances supplémentaires pour le notebook 02 :**
 ```bash
-pip install prophet shap plotly ruptures
+pip install transformers torch feedparser beautifulsoup4 tqdm lxml
 ```
 
 ### Récupération des données
 
-Les fichiers CSV extraits via BigQuery ne sont pas versionnés (voir `.gitignore`). Deux options :
+Les CSV issus de BigQuery ne sont pas versionnés. Deux options :
 
 **Option A — Régénérer depuis BigQuery**
 ```
 1. Ouvrir notebooks/01_Data_extraction_GDELT.ipynb sur Google Colab
 2. Authentifier avec un compte Google Cloud (projet : hackathon-benin-insight)
-3. Exécuter toutes les cellules → les CSV sont sauvegardés sur Google Drive
-4. Télécharger benin_events_clean.csv et benin_gkg.csv dans data/raw/
+3. Exécuter toutes les cellules → CSV sauvegardés sur Google Drive
 ```
 
 **Option B — Depuis le Drive partagé**
 ```
 https://drive.google.com/drive/folders/1GxSqPlL_Wxs1RJRO4R2zAEsficxM8MXU
-→ Télécharger benin_events_clean.csv et comparatif_regional_1.csv dans data/raw/
 ```
 
-> Le fichier `gdelt_republique_benin_clean.csv` (source directe GDELT) est déjà inclus dans `data/processed/`.
+### Ordre d'exécution
+
+```
+01_Data_extraction_GDELT.ipynb          ← Colab (BigQuery + FMI)
+        ↓
+02_Data_extraction_Medias_Locaux.ipynb  ← Colab GPU (scraping + NLP)
+        ↓
+dashboard/app.py                        ← Streamlit local ou cloud
+```
 
 ### Lancer le dashboard
 
-**🌐 Version en ligne (démo publique) :**
-👉 [https://benin-observatoire.streamlit.app/](https://benin-observatoire.streamlit.app/)
-
-**En local :**
 ```bash
 cd dashboard
 streamlit run app.py
 ```
 
-Le dashboard sera accessible à `http://localhost:8501`.
-
-### Ordre d'exécution des notebooks
-
-```
-01_Data_extraction_GDELT.ipynb   ← Colab uniquement (BigQuery + Drive)
-        ↓
-02_EDA.ipynb                     ← Colab ou local (nécessite les CSV du Drive)
-        ↓
-03_ML_models.ipynb               ← Local (gdelt_republique_benin_clean.csv)
-        ↓
-04_Prediction_Prospective_Benin.ipynb  ← Local (sortie du notebook 03)
-```
+Accessible à `http://localhost:8501`.
 
 ---
 
 ## 8. Résultats clés
 
-### Profil médiatique du Bénin en 2025
+### Le biais médiatique international est mesurable et quantifié
 
-- **~30 700 événements** indexés par GDELT impliquant le Bénin (source BigQuery)
-- **~8 000 événements** dans le dataset intérieur granulaire (source GDELT direct)
-- **64,4 %** des événements sont des déclarations verbales (QuadClass 1) — dominance diplomatique
-- **25,5 %** des événements sont conflictuels (QuadClass 3+4) — 1 sur 4, signal fort
-- **GoldsteinScale moyen : +0,68** — légèrement positif, mais masquant une distribution bimodale
-- **AvgTone moyen : -1,37** — registre légèrement pessimiste dans la presse internationale
+- **Presse internationale** : 25.9% de conflictualité, ton moyen -1.50
+- **Presse locale** : 4.7% de conflictualité, ton moyen +4.05
+- Sur le Coup d'État de décembre 2025 : écart de **+9.3 points de ton** entre sources locales et internationales
+- Les médias locaux consacrent ~10% de leur couverture à la diaspora et à l'investissement, contre < 1% pour les sources internationales
 
-### Anomalies temporelles confirmées
+### Le Bénin performe significativement mieux que sa couverture médiatique ne le laisse entendre
 
-| Mois | Signal | Interprétation |
-|---|---|---|
-| Juin 2025 | Creux (~1 100 événements) | Baisse anormale de la couverture médiatique |
-| Décembre 2025 | Pic (~5 700 événements) | Événement(s) majeur(s) à investiguer |
+- **Croissance du PIB 2026 : +7.0%** — 1ère d'Afrique de l'Ouest (source FMI)
+- **Inflation 2026 : 2.0%** — maîtrisée, bien en dessous du Nigeria (+16%) et du Ghana (+22.9% en 2024)
+- **Dette/PIB : 57.2%** — profil sain (< 60%), en amélioration depuis le pic de 2023
+- **GoldsteinScale moyen : +0.60** — positif malgré une distribution bimodale révélatrice
 
-### Segmentation des événements (K-Means)
+### La menace sécuritaire est géographiquement circonscrite
 
-Deux clusters principaux identifiés par PCA + K-Means :
-- **Cluster coopération** : ton positif, Goldstein élevé, acteurs institutionnels
-- **Cluster conflit** : ton négatif, Goldstein bas, forte concentration dans le nord du Bénin (`IsNorthBenin = 1`)
+- 74.4% des événements GDELT impliquant le Bénin sont coopératifs
+- Les incidents sécuritaires se concentrent sur les zones frontalières nord (Alibori, Karimama) — éloignées des pôles économiques
+- Note de sécurité ressentie : 4.7–4.8/5 à Cotonou et Ouidah ; 2.3/5 à la frontière nord
 
-### Prédiction de conflit (XGBoost)
+### La presse locale documente une transformation économique réelle
 
-Variables les plus discriminantes (importances) :
-1. `GoldsteinNorm` — principale variable de stabilité
-2. `ToneNorm` — signal sémantique complémentaire
-3. `IsNorthBenin` — dimension géographique significative
-4. `MediaWeight` — intensité de la couverture comme amplificateur
+Top thèmes identifiés par NLP dans les médias béninois :
+1. `gouvernance_institutionnelle` (18.3%)
+2. `relations_internationales` (14.4%)
+3. `numérique_innovation` (6.5%) — quasi-absent de la presse internationale
+4. `diaspora_retour` (5.5%) — totalement ignoré à l'étranger
+5. `industrie_GDIZ` (3.0%) — 18 unités opérationnelles, +25 000 emplois
 
 ---
 
@@ -357,24 +358,24 @@ Variables les plus discriminantes (importances) :
 
 | Catégorie | Technologies |
 |---|---|
-| **Extraction** | Google BigQuery, Google Colab, `google-cloud-bigquery` |
-| **Manipulation** | `pandas >= 2.0`, `numpy >= 1.24`, `pyarrow >= 13.0` |
-| **Visualisation** | `matplotlib >= 3.7`, `seaborn >= 0.12`, `plotly >= 5.15` |
-| **Machine Learning** | `scikit-learn >= 1.3`, `xgboost`, `prophet` |
-| **Séries temporelles** | `ruptures >= 1.1.9` (PELT), `prophet` (Meta) |
-| **Explicabilité** | `shap` |
+| **Extraction GDELT** | Google BigQuery, `google-cloud-bigquery`, Google Colab |
+| **Extraction médias locaux** | `requests`, `feedparser`, `beautifulsoup4`, `lxml` |
+| **Extraction FMI** | API REST `imf.org/external/datamapper` |
+| **Manipulation** | `pandas >= 2.0`, `numpy >= 1.24` |
+| **NLP / Classification** | `transformers` (XLM-RoBERTa), `torch`, GPU T4 |
+| **Visualisation** | `plotly >= 5.15` |
 | **Dashboard** | `streamlit >= 1.28` |
-| **Environnement** | Python 3.9+, Google Colab (notebooks 01–02), local (notebooks 03–04 + dashboard) |
+| **Environnement** | Python 3.9+, Google Colab (notebooks), local (dashboard) |
 
 ---
 
-## Équipe
+## 10. Équipe
 
 Projet réalisé dans le cadre du **Hackathon Bénin Insights 2026**.
 
 | Nom | Rôle |
 |---|---|
-| **Léonel Junior VODOUNOU** | Data Scientist |
+| **Léonel Junior VODOUNOU** | ML Engineer |
 | **Fidèle TCHANDO** | ML Engineer |
 | **Ibrahima KONE** | Data Engineer |
 | **Georges AYENI** | Data Analyst |
@@ -383,7 +384,7 @@ Projet réalisé dans le cadre du **Hackathon Bénin Insights 2026**.
 
 ## Licence & Contact
 
-Données source : [The GDELT Project](https://www.gdeltproject.org/) — licence ouverte (Open Data).
+Données source : [The GDELT Project](https://www.gdeltproject.org/) · [FMI DataMapper](https://www.imf.org/external/datamapper/) · Médias béninois (open web)
 
 ---
 
