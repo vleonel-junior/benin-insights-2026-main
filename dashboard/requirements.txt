@@ -1,0 +1,7 @@
+# Dépendances pour le Dashboard Bénin Pulse
+streamlit
+pandas
+plotly
+numpy
+tweepy
+requests

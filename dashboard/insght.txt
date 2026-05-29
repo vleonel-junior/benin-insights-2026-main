@@ -1,0 +1,9 @@
+comment on est bien reférencé
+comment on gère la mise à jour des informations
+porté de notre solutions / avons nous pensé à des partenaires pour fiabiliser nos data auprès de nos utilisateurs ?
+
+Verifier auprès de la population situation du pays
+
+Penser un outils d'aide au gouvernement en suivant les retours des populations par rapport aux réformes
+
+
